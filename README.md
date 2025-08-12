@@ -1,4 +1,7 @@
 
+## Updated README content (added relevant Task 3 details)
+
+````markdown
 # GMF Investments — Financial Data Analytics & Forecasting Pipeline
 
 ## Project Overview
@@ -37,6 +40,16 @@ The goal is to preprocess and explore financial data (**Task 1**) and build pred
 
 ---
 
+### Task 3: Forecast Future Market Trends
+
+* **Generate** future price predictions for 6-12 months using the best trained model(s).
+* **Visualize** forecasts alongside historical prices with confidence intervals.
+* **Interpret** long-term trends, identifying upward/downward movements or anomalies.
+* **Analyze** forecast uncertainty by examining confidence interval widths over the horizon.
+* **Outline** market opportunities and risks based on forecast trends and volatility.
+
+---
+
 ## Technologies and Libraries
 
 * Python 3.8+
@@ -50,7 +63,7 @@ The goal is to preprocess and explore financial data (**Task 1**) and build pred
 
 ## Project Structure
 
-```
+```plaintext
 gmf_investments/
 │
 ├── data/
@@ -61,7 +74,7 @@ gmf_investments/
 │   ├── 01_data_fetch_and_clean.ipynb    # Task 1: data fetching & cleaning
 │   ├── 02_eda.ipynb                      # Task 1: exploratory data analysis
 │   ├── 03_model_arima_lstm.ipynb         # Task 2: time series modeling & comparison
-│   ├── 04_forecasting.ipynb              # Task 2: forecasting & evaluation
+│   ├── 04_forecasting.ipynb              # Task 2 & 3: forecasting & trend analysis
 │
 ├── src/
 │   ├── data_fetch.py          # Functions to download data from Yahoo Finance
@@ -80,7 +93,7 @@ gmf_investments/
 ├── requirements.txt           # Dependencies
 ├── README.md                  # This file
 └── main.py                   # Optional: run full pipeline script
-```
+````
 
 ---
 
@@ -119,11 +132,12 @@ Fits ARIMA/SARIMA and LSTM models, generates forecasts, and evaluates performanc
 python src/task2_modeling.py
 ```
 
-Or explore the Jupyter notebooks step-by-step:
+### 5. Forecast Future Market Trends (Task 3)
 
-* `notebooks/01_data_fetch_and_clean.ipynb`
-* `notebooks/02_eda.ipynb`
-* `notebooks/03_model_arima_lstm.ipynb`
+Run the forecasting notebook or script to generate 6-12 month forecasts with confidence intervals and perform trend and risk analysis.
+
+Use the Jupyter notebook:
+
 * `notebooks/04_forecasting.ipynb`
 
 ---
@@ -134,10 +148,12 @@ Or explore the Jupyter notebooks step-by-step:
 * **EDA:** TSLA showed high volatility and non-stationarity in prices; returns were more stationary.
 * **ARIMA/SARIMA:** Identified best seasonal parameters with grid search (e.g., SARIMA(0,1,1)x(0,1,1,12)) for Tesla price forecasting.
 * **LSTM:** Deep learning model showed lower MAE and RMSE compared to ARIMA, indicating improved accuracy but higher complexity.
-* **Evaluation Metrics:**
+* **Forecasting & Trend Analysis:**
 
-  * ARIMA MAE \~ 57.95, RMSE \~ 69.33
-  * LSTM MAE \~ 9.92, RMSE \~ 13.77
+  * Generated 6-12 month forecasts with confidence intervals.
+  * Observed general upward trend with widening confidence intervals over time.
+  * Highlighted increasing uncertainty in long-term forecasts.
+  * Provided actionable insights on market opportunities and risks.
 
 ---
 
@@ -155,4 +171,6 @@ Or explore the Jupyter notebooks step-by-step:
 
 **Dagmawi Ayenew**
 Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
+
+```
 

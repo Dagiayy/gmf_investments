@@ -13,9 +13,6 @@ The goal is to preprocess and explore financial data (**Task 1**) and build pred
 
 ---
 
-
-
-
 ## Tasks
 
 ### Task 1: Data Preprocessing and Exploratory Data Analysis (EDA)
@@ -50,6 +47,30 @@ The goal is to preprocess and explore financial data (**Task 1**) and build pred
 
 ---
 
+### Task 4: Portfolio Optimization Based on Forecast
+
+* **Use** forecasted return for TSLA from the best-performing model as expected return.
+* **Use** historical average returns for stable assets (BND, SPY).
+* **Compute** covariance matrix from historical returns of all assets.
+* **Run** portfolio optimization based on Modern Portfolio Theory.
+* **Generate** and plot the Efficient Frontier.
+* **Identify** and mark Maximum Sharpe Ratio and Minimum Volatility portfolios.
+* **Recommend** an optimal portfolio with expected return, volatility, and weights.
+
+---
+
+### Task 5: Strategy Backtesting (Final Task)
+
+* **Define** backtesting period using the last year of data (e.g., Aug 1, 2024 – Jul 31, 2025).
+* **Establish** a benchmark portfolio (e.g., static 60% SPY / 40% BND).
+* **Simulate** the strategy portfolio performance based on optimal weights from Task 4.
+* **Hold** portfolio weights fixed or perform simplified rebalancing over the period.
+* **Calculate** cumulative returns, total return, and annualized Sharpe Ratio.
+* **Compare** the strategy performance against the benchmark.
+* **Analyze** and conclude on strategy viability and risk-adjusted performance.
+
+---
+
 ## Technologies and Libraries
 
 * Python 3.8+
@@ -75,14 +96,16 @@ gmf_investments/
 │   ├── 02_eda.ipynb                      # Task 1: exploratory data analysis
 │   ├── 03_model_arima_lstm.ipynb         # Task 2: time series modeling & comparison
 │   ├── 04_forecasting.ipynb              # Task 2 & 3: forecasting & trend analysis
+│   ├── 05_portfolio_optimization.ipynb   # Task 4: portfolio optimization
+│   ├── 06_backtesting.ipynb               # Task 5: strategy backtesting
 │
 ├── src/
 │   ├── data_fetch.py          # Functions to download data from Yahoo Finance
 │   ├── preprocessing.py       # Data cleaning and feature engineering functions
 │   ├── eda.py                 # Plotting and summary statistics
 │   ├── models.py              # ARIMA/SARIMA & LSTM model implementations
-│   ├── portfolio.py           # Portfolio optimization (future work)
-│   ├── backtesting.py         # Backtesting logic (future work)
+│   ├── portfolio.py           # Portfolio optimization functions
+│   ├── backtesting.py         # Backtesting logic
 │   └── utils.py               # Helper functions
 │
 ├── reports/
@@ -110,15 +133,11 @@ pip install -r requirements.txt
 
 ### 2. Run Data Preprocessing (Task 1)
 
-This step fetches raw data, cleans it, and saves processed datasets.
-
 ```bash
 python src/task1_preprocess.py
 ```
 
 ### 3. Run Exploratory Data Analysis (Task 1)
-
-Generates visualizations and statistics for understanding the data.
 
 ```bash
 python src/task1_eda.py
@@ -126,28 +145,40 @@ python src/task1_eda.py
 
 ### 4. Build and Evaluate Forecasting Models (Task 2)
 
-Fits ARIMA/SARIMA and LSTM models, generates forecasts, and evaluates performance.
-
 ```bash
 python src/task2_modeling.py
 ```
 
 ### 5. Forecast Future Market Trends (Task 3)
 
-Run the forecasting notebook or script to generate 6-12 month forecasts with confidence intervals and perform trend and risk analysis.
-
 Use the Jupyter notebook:
 
 * `notebooks/04_forecasting.ipynb`
+
+### 6. Portfolio Optimization (Task 4)
+
+Use the Jupyter notebook:
+
+* `notebooks/05_portfolio_optimization.ipynb`
+
+### 7. Strategy Backtesting (Task 5)
+
+Use the Jupyter notebook:
+
+* `notebooks/06_backtesting.ipynb`
 
 ---
 
 ## Results Summary
 
 * **Data Cleaning:** Missing values handled, dates properly formatted, and consistent time series constructed.
+
 * **EDA:** TSLA showed high volatility and non-stationarity in prices; returns were more stationary.
+
 * **ARIMA/SARIMA:** Identified best seasonal parameters with grid search (e.g., SARIMA(0,1,1)x(0,1,1,12)) for Tesla price forecasting.
+
 * **LSTM:** Deep learning model showed lower MAE and RMSE compared to ARIMA, indicating improved accuracy but higher complexity.
+
 * **Forecasting & Trend Analysis:**
 
   * Generated 6-12 month forecasts with confidence intervals.
@@ -155,15 +186,29 @@ Use the Jupyter notebook:
   * Highlighted increasing uncertainty in long-term forecasts.
   * Provided actionable insights on market opportunities and risks.
 
+* **Portfolio Optimization:**
+
+  * Used forecasted returns and historical data to compute efficient frontier.
+  * Identified Maximum Sharpe Ratio and Minimum Volatility portfolios.
+  * Recommended an optimal portfolio with asset weights and risk-return profile.
+
+* **Backtesting:**
+
+  * Simulated strategy portfolio performance against a benchmark (60% SPY / 40% BND).
+  * Strategy achieved a total return of \~9.1% with Sharpe ratio \~0.97.
+  * Benchmark achieved a total return of \~11.1% with Sharpe ratio \~0.93.
+  * Strategy showed better risk-adjusted return, suggesting viability despite lower raw return.
+  * Backtest highlights the importance of risk management alongside return maximization.
+
 ---
 
 ## Future Directions
 
 * Expand forecasting models with additional techniques (GARCH, Prophet).
 * Integrate macroeconomic variables and sentiment data for enriched features.
-* Implement portfolio optimization and risk budgeting modules.
-* Automate the full data pipeline and enable real-time forecasting.
-* Add backtesting of investment strategies using forecast results.
+* Implement more sophisticated portfolio optimization and risk budgeting.
+* Add realistic backtesting features like transaction costs, rebalancing, and drawdowns.
+* Automate full data pipeline and enable near real-time forecasting and trading signals.
 
 ---
 
@@ -173,3 +218,5 @@ Use the Jupyter notebook:
 Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
 
 ```
+
+

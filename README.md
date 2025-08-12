@@ -1,7 +1,4 @@
 
-## Updated README content (added relevant Task 3 details)
-
-````markdown
 # GMF Investments — Financial Data Analytics & Forecasting Pipeline
 
 ## Project Overview
@@ -15,6 +12,9 @@ This project focuses on financial time series data analysis and forecasting for 
 The goal is to preprocess and explore financial data (**Task 1**) and build predictive models (**Task 2**) to forecast future stock prices. This serves as a foundation for quantitative investment strategies and risk management.
 
 ---
+
+
+
 
 ## Tasks
 
@@ -173,4 +173,3 @@ Use the Jupyter notebook:
 Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
 
 ```
-

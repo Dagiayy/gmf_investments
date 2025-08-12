@@ -1,7 +1,4 @@
 
-## Updated README content (added relevant Task 3 details)
-
-````markdown
 # GMF Investments — Financial Data Analytics & Forecasting Pipeline
 
 ## Project Overview
@@ -173,4 +170,3 @@ Use the Jupyter notebook:
 Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
 
 ```
-

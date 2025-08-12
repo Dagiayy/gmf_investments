@@ -1,119 +1,50 @@
 
-
-# GMF Investments — Financial Data Preprocessing and Exploratory Analysis
+# GMF Investments — Financial Data Analytics & Forecasting Pipeline
 
 ## Project Overview
 
-This project aims to preprocess and conduct exploratory data analysis (EDA) on historical financial data for three major assets: TSLA (Tesla, Inc.), BND (Vanguard Total Bond Market ETF), and SPY (SPDR S\&P 500 ETF Trust). These assets represent a balanced mix of high-growth/high-volatility, stable/low-risk, and diversified/moderate-risk investment vehicles.
+This project focuses on financial time series data analysis and forecasting for three major assets:
 
-The primary objective is to clean, understand, and analyze the financial time series data as a foundational step toward advanced modeling, risk assessment, and investment strategy development.
+* **TSLA (Tesla, Inc.)** — high growth and volatility
+* **BND (Vanguard Total Bond Market ETF)** — low risk, stable bonds
+* **SPY (SPDR S\&P 500 ETF Trust)** — diversified equity exposure
 
----
-
-## Motivation
-
-In financial analytics and quantitative investing, thorough data preprocessing and robust exploratory analysis are critical to ensure data quality and to derive actionable insights. This enables better forecasting, portfolio optimization, and risk management.
+The goal is to preprocess and explore financial data (**Task 1**) and build predictive models (**Task 2**) to forecast future stock prices. This serves as a foundation for quantitative investment strategies and risk management.
 
 ---
 
-## Project Scope
+## Tasks
 
-* **Data Acquisition:** Download historical market data using Yahoo Finance API.
-* **Data Cleaning:** Handle missing values, ensure consistent data types, and prepare datasets for analysis.
-* **Statistical Summary:** Generate descriptive statistics to understand asset behavior and data distribution.
-* **Normalization:** Scale features as needed for subsequent machine learning or statistical modeling.
-* **Exploratory Data Analysis:**
+### Task 1: Data Preprocessing and Exploratory Data Analysis (EDA)
 
-  * Visualize price trends over time to identify patterns and regimes.
-  * Compute and plot daily returns and their distributions to gauge volatility.
-  * Analyze rolling statistics (mean and standard deviation) to assess short-term trends and fluctuations.
-  * Detect outliers and significant anomalies that may impact modeling and decision-making.
-* **Stationarity Testing:** Apply Augmented Dickey-Fuller (ADF) tests to detect stationarity in prices and returns — a prerequisite for many time series models.
-* **Risk Assessment:** Calculate foundational risk metrics including Value at Risk (VaR) and Sharpe Ratio for evaluating potential losses and risk-adjusted returns.
+* **Download** raw historical market data using Yahoo Finance API.
+* **Clean** data to handle missing values, fix inconsistencies, and ensure proper formats.
+* **Visualize** price trends, daily returns, rolling statistics, and volatility.
+* **Perform** stationarity tests (ADF test) to verify suitability for time series modeling.
+* **Calculate** key risk metrics: Value at Risk (VaR) and Sharpe Ratio.
+* **Output** cleaned datasets and summary visualizations for further analysis.
 
 ---
 
-## Data Description
+### Task 2: Time Series Forecasting Models
 
-* **TSLA (Tesla, Inc.):** High volatility, growth-oriented stock with potential for significant returns and risks.
-* **BND (Vanguard Total Bond Market ETF):** Stable bond market exposure, providing low volatility and risk mitigation.
-* **SPY (SPDR S\&P 500 ETF Trust):** Broad market exposure representing diversified equities with moderate risk and return profiles.
+* **Split data** chronologically into training (2015-2023) and testing (2024-2025) to preserve time order.
+* **Develop and optimize** classical models: ARIMA and SARIMA, with grid search for parameters.
+* **Build and train** a deep learning model: LSTM neural network.
+* **Forecast** stock prices on the test set.
+* **Evaluate** models using performance metrics: Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and optionally MAPE.
+* **Compare** model results and discuss trade-offs between interpretability and accuracy.
 
 ---
 
 ## Technologies and Libraries
 
-* **Python 3.8+** — Core programming language
-* **pandas** — Data manipulation and cleaning
-* **numpy** — Numerical computations
-* **matplotlib & seaborn** — Data visualization
-* **statsmodels** — Statistical tests (e.g., ADF test)
-* **scikit-learn** — Data scaling and preprocessing
-
----
-
-## Usage Guide
-
-1. **Environment Setup**
-   Create and activate a virtual environment, then install required libraries:
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/macOS
-   venv\Scripts\activate     # Windows
-   pip install -r requirements.txt
-   ```
-
-2. **Data Preprocessing**
-   Run the preprocessing script to clean raw data, fill missing values, and save processed datasets:
-
-   ```bash
-   python src/task1_preprocess.py
-   ```
-
-3. **Exploratory Data Analysis**
-   Execute the EDA script to generate plots, perform statistical tests, and calculate risk metrics:
-
-   ```bash
-   python src/task1_eda.py
-   ```
-
-4. **Outputs**
-
-   * Processed datasets saved under `data/processed/`
-   * Visualizations and reports saved under `output/` folder for review
-
----
-
-## Key Deliverables
-
-* Cleaned and processed financial time series data ready for modeling
-* Comprehensive exploratory visualizations including:
-
-  * Price trends
-  * Daily percentage returns
-  * Rolling volatility measures
-  * Outlier detection reports
-* Statistical test results for stationarity (ADF tests) with interpretations
-* Risk metrics summarizing historical return distributions and risk-adjusted performance
-
----
-
-## Insights and Implications
-
-* TSLA exhibits significant volatility and non-stationary price behavior, requiring differencing or transformation for time series modeling.
-* Daily returns tend to be stationary, supporting modeling approaches on returns rather than raw prices.
-* Detected multiple outliers correlating with notable market events, suggesting the importance of anomaly detection in risk management.
-* Risk metrics such as VaR and Sharpe Ratio provide quantitative benchmarks for potential losses and investment attractiveness.
-
----
-
-## Future Work
-
-* Implement and evaluate predictive time series models (ARIMA, GARCH, LSTM).
-* Expand analysis to multi-asset portfolio optimization and risk budgeting.
-* Incorporate macroeconomic indicators and sentiment analysis to enrich modeling.
-* Automate data pipeline and integrate with real-time data feeds.
+* Python 3.8+
+* pandas, numpy — Data manipulation and numerical operations
+* matplotlib, seaborn — Visualization
+* statsmodels — Statistical tests, ARIMA/SARIMA modeling
+* scikit-learn — Data preprocessing and evaluation metrics
+* TensorFlow / Keras — LSTM modeling and training
 
 ---
 
@@ -122,54 +53,106 @@ In financial analytics and quantitative investing, thorough data preprocessing a
 ```
 gmf_investments/
 │
-├── data/                        # Raw & processed datasets
-│   ├── raw/
-│   │   ├── tsla_raw.csv
-│   │   ├── bnd_raw.csv
-│   │   └── spy_raw.csv
-│   ├── processed/
-│   │   ├── tsla_processed.csv
-│   │   ├── bnd_processed.csv
-│   │   └── spy_processed.csv
+├── data/
+│   ├── raw/                  # Raw CSVs downloaded from Yahoo Finance
+│   ├── processed/            # Cleaned and preprocessed CSVs
 │
-├── notebooks/                   # Jupyter notebooks for exploration
-│   ├── 01_data_fetch_and_clean.ipynb
-│   ├── 02_eda.ipynb
-│   ├── 03_model_arima_lstm.ipynb
-│   ├── 04_forecasting.ipynb
-│   ├── 05_portfolio_optimization.ipynb
-│   └── 06_backtesting.ipynb
+├── notebooks/
+│   ├── 01_data_fetch_and_clean.ipynb    # Task 1: data fetching & cleaning
+│   ├── 02_eda.ipynb                      # Task 1: exploratory data analysis
+│   ├── 03_model_arima_lstm.ipynb         # Task 2: time series modeling & comparison
+│   ├── 04_forecasting.ipynb              # Task 2: forecasting & evaluation
 │
-├── src/                         # Python scripts for reusable code
-│   ├── __init__.py
-│   ├── data_fetch.py             # yfinance fetching functions
-│   ├── preprocessing.py          # cleaning, feature engineering
-│   ├── eda.py                    # plotting and descriptive stats
-│   ├── models.py                 # ARIMA, LSTM implementations
-│   ├── portfolio.py              # MPT & efficient frontier
-│   ├── backtesting.py            # backtest logic
-│   └── utils.py                  # helpers
+├── src/
+│   ├── data_fetch.py          # Functions to download data from Yahoo Finance
+│   ├── preprocessing.py       # Data cleaning and feature engineering functions
+│   ├── eda.py                 # Plotting and summary statistics
+│   ├── models.py              # ARIMA/SARIMA & LSTM model implementations
+│   ├── portfolio.py           # Portfolio optimization (future work)
+│   ├── backtesting.py         # Backtesting logic (future work)
+│   └── utils.py               # Helper functions
 │
-├── reports/                      # Outputs for submission
-│   ├── interim_report.pdf
-│   ├── final_investment_memo.pdf
-│   └── figures/
-│       ├── tsla_trend.png
-│       ├── efficient_frontier.png
-│       └── backtest_results.png
+├── reports/
+│   ├── interim_report.pdf     # Interim analysis report
+│   ├── final_investment_memo.pdf  # Final investment memo
+│   └── figures/               # Visualizations (price trends, model diagnostics)
 │
-├── requirements.txt              # Python dependencies
-├── README.md                     # Project overview & instructions
-└── main.py                       # Optional script to run full pipeline
-
+├── requirements.txt           # Dependencies
+├── README.md                  # This file
+└── main.py                   # Optional: run full pipeline script
 ```
+
+---
+
+## Usage Instructions
+
+### 1. Setup Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+```
+
+### 2. Run Data Preprocessing (Task 1)
+
+This step fetches raw data, cleans it, and saves processed datasets.
+
+```bash
+python src/task1_preprocess.py
+```
+
+### 3. Run Exploratory Data Analysis (Task 1)
+
+Generates visualizations and statistics for understanding the data.
+
+```bash
+python src/task1_eda.py
+```
+
+### 4. Build and Evaluate Forecasting Models (Task 2)
+
+Fits ARIMA/SARIMA and LSTM models, generates forecasts, and evaluates performance.
+
+```bash
+python src/task2_modeling.py
+```
+
+Or explore the Jupyter notebooks step-by-step:
+
+* `notebooks/01_data_fetch_and_clean.ipynb`
+* `notebooks/02_eda.ipynb`
+* `notebooks/03_model_arima_lstm.ipynb`
+* `notebooks/04_forecasting.ipynb`
+
+---
+
+## Results Summary
+
+* **Data Cleaning:** Missing values handled, dates properly formatted, and consistent time series constructed.
+* **EDA:** TSLA showed high volatility and non-stationarity in prices; returns were more stationary.
+* **ARIMA/SARIMA:** Identified best seasonal parameters with grid search (e.g., SARIMA(0,1,1)x(0,1,1,12)) for Tesla price forecasting.
+* **LSTM:** Deep learning model showed lower MAE and RMSE compared to ARIMA, indicating improved accuracy but higher complexity.
+* **Evaluation Metrics:**
+
+  * ARIMA MAE \~ 57.95, RMSE \~ 69.33
+  * LSTM MAE \~ 9.92, RMSE \~ 13.77
+
+---
+
+## Future Directions
+
+* Expand forecasting models with additional techniques (GARCH, Prophet).
+* Integrate macroeconomic variables and sentiment data for enriched features.
+* Implement portfolio optimization and risk budgeting modules.
+* Automate the full data pipeline and enable real-time forecasting.
+* Add backtesting of investment strategies using forecast results.
 
 ---
 
 ## Contact
 
 **Dagmawi Ayenew**
-Email: \[[ayenewdagmawi@gmail.com]]
+Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
 
-
----

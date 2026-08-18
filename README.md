@@ -1,72 +1,101 @@
 # GMF Investments — Quantitative Analytics, Time Series Forecasting & Portfolio Strategy Pipeline
 
-## Project Overview
+[![CI/CD Pipeline](https://github.com/Dagiayy/gmf_investments/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Dagiayy/gmf_investments/actions/workflows/ci-cd.yml)
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-This repository houses the **GMF Investments Quantitative Pipeline & Roadmap Implementation**. The codebase performs financial data engineering, exploratory data analysis, time-series forecasting (ARIMA/SARIMA vs Deep Learning LSTM), Modern Portfolio Theory optimization (Markowitz, Risk Parity, Black-Litterman), and net-of-transaction-cost backtesting across three strategic asset classes:
+## Executive Summary
 
-* **TSLA (Tesla, Inc.)** — High-growth equity with significant volatility.
-* **SPY (SPDR S&P 500 ETF Trust)** — Broad market U.S. index benchmark.
-* **BND (Vanguard Total Bond Market ETF)** — Fixed income asset for risk stabilization.
+The **GMF Investments Quantitative Pipeline** provides an end-to-end framework for financial data engineering, volatility modeling, predictive time-series forecasting, quantitative portfolio optimization, and out-of-sample backtesting. The platform analyzes three core strategic assets:
 
----
-
-## Technical Highlights & Roadmap Enhancements
-
-### 1. Central Configuration & Reproducibility Infrastructure
-* **Central Config (`configs/config.json`)**: All asset universe settings, date bounds (2015–2025), train/test split dates (`2023-12-31`), backtest period (`2024-08-01` to `2025-07-31`), transaction cost assumptions (`10 bps / 0.1%`), risk-free rate (`2.0%`), and model seeds (`42`) are centralized.
-* **Experiment Logging (`logs/experiment_log.json`)**: Automatically logs execution timestamps, dataset bounds, model metrics, portfolio weights, and test results for full auditability.
-
-### 2. Data Contracts & Leakage Prevention (`src/data_contracts.py`)
-* Enforces data contract assertions: continuous `DatetimeIndex`, non-empty series, zero NaN occurrences, non-positive price checks ($P > 0$), positive semi-definite covariance matrices ($\lambda_{\min} \ge 0$), and portfolio weight sum-to-1 constraints ($\sum w_i = 1$).
-
-### 3. Naive Forecasting Baselines & Walk-Forward Validation Engine (`src/validation.py`)
-* Benchmarks complex models against simple naive baselines: **Random Walk / Naive Last-Value** ($y_{t+h} = y_t$) and **30-Day Moving Average**.
-* Implements a 19-fold expanding-window `WalkForwardValidator` to evaluate model stability across multiple historical market regimes without data leakage.
-
-### 4. Comprehensive Risk Analytics (`src/risk.py`)
-* Extends basic VaR and Sharpe ratios with:
-  * **Sortino Ratio** (downside deviation risk-adjusted return)
-  * **Calmar Ratio** (annualized return / max drawdown)
-  * **Maximum Drawdown (MDD)** & Peak-to-Trough duration
-  * **95% & 99% Expected Shortfall / Conditional VaR (CVaR)**
-  * **Jarque-Bera Normality Test** & higher-order moments (Skewness, Kurtosis)
-  * **Asset Beta** relative to SPY market index.
-
-### 5. Advanced Portfolio Optimization (`src/portfolio.py`)
-* **Ledoit-Wolf Covariance Shrinkage**: Reduces sample noise in asset covariance estimation.
-* **CAPM Expected Returns**: Estimates CAPM expected returns ($E(R_i) = R_f + \beta_i (E(R_m) - R_f)$).
-* **Advanced Optimizers**: Supports **Markowitz Maximum Sharpe & Minimum Volatility**, **Risk Parity (Equal Risk Contribution - ERC)**, **Black-Litterman Allocation**, and **Return Sensitivity Stress Testing**.
-
-### 6. Realistic Strategy Backtesting & Stress Scenarios (`src/backtesting.py`)
-* Simulates out-of-sample portfolio performance net of $10\text{ bps}$ ($0.1\%$) transaction costs per rebalance trade.
-* Tracks annualized portfolio turnover and compares monthly vs. quarterly rebalancing schedules.
-* **Macro Stress Testing**: Evaluates portfolio downside buffers under *Severe Equity Selloffs*, *Rate Shocks*, and *Tech Volatility Crashes*.
-
-### 7. Automated Unit Test Suite (`tests/test_pipeline.py`)
-* Unit tests validating data contract assertions, risk calculations, covariance shrinkage, CAPM returns, portfolio constraints, and backtest transaction cost accounting.
+- **TSLA (Tesla, Inc.)**: High-growth equity asset exhibiting substantial price volatility.
+- **SPY (SPDR S&P 500 ETF Trust)**: Broad market equity index ETF representing U.S. market exposure.
+- **BND (Vanguard Total Bond Market ETF)**: Low-risk fixed income benchmark for portfolio capital preservation.
 
 ---
 
-## Repository Architecture
+## Key Features & Mathematical Foundations
+
+### 1. Centralized Configuration & Reproducibility Infrastructure
+- **Configuration Hub (`configs/config.json`)**: Centralized asset universe, historical bounds (`2015-01-01` to `2025-07-31`), train/test split dates (`2023-12-31`), transaction costs (`10 bps / 0.1%`), risk-free rate (`2.0%`), and model seeds (`42`).
+- **Experiment Logger (`logs/experiment_log.json`)**: Automatically logs execution timestamps, data bounds, model performance metrics, portfolio weights, and unit test status for complete auditability.
+
+### 2. Data Contracts & Data Quality Assertions (`src/data_contracts.py`)
+- Programmatically asserts:
+  - Non-empty series with continuous `DatetimeIndex`.
+  - Absence of NaN values and duplicate dates.
+  - Strictly positive price values ($P > 0$).
+  - Positive semi-definiteness of the asset covariance matrix ($\lambda_{\min}(\mathbf{\Sigma}) \ge 0$).
+  - Portfolio weight non-negativity ($w_i \ge 0$) and sum-to-one constraint ($\sum_{i=1}^N w_i = 1$).
+
+### 3. Forecasting Engine & Naive Baselines (`src/models.py`, `src/validation.py`)
+- Benchmarks predictive models against simple naive baselines:
+  - **Random Walk / Naive Last-Value**:
+    $$\hat{y}_{t+h} = y_t$$
+  - **Moving Average (30-Day)**:
+    $$\hat{y}_{t+h} = \frac{1}{N} \sum_{i=0}^{N-1} y_{t-i}$$
+  - **Seasonal ARIMA (SARIMA)**:
+    $$\Phi_P(B^s) \phi_p(B) (1-B)^d (1-B^s)^D y_t = \Theta_Q(B^s) \theta_q(B) \epsilon_t$$
+- **Walk-Forward Cross-Validation**: Executes 19-fold expanding-window cross-validation to assess out-of-sample stability without look-ahead leakage.
+
+### 4. GARCH(1,1) Volatility Modeling (`src/garch_model.py`)
+- Fits conditional variance parameters via Maximum Likelihood Estimation:
+  $$\sigma_t^2 = \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma_{t-1}^2 \quad \text{where } \omega > 0, \, \alpha \ge 0, \, \beta \ge 0, \, \alpha + \beta < 1$$
+
+### 5. Extended Risk & Distribution Analytics (`src/risk.py`)
+- Computes comprehensive risk metrics:
+  - **Annualized Sharpe Ratio**:
+    $$\text{Sharpe} = \frac{\mathbb{E}[R_p] - R_f}{\sigma_p}$$
+  - **Sortino Ratio**:
+    $$\text{Sortino} = \frac{\mathbb{E}[R_p] - R_f}{\sigma_d}, \quad \text{where } \sigma_d = \sqrt{\frac{1}{T} \sum_{t=1}^T \min(0, R_{p,t} - R_f)^2}$$
+  - **Value at Risk (95% & 99% VaR)**:
+    $$\text{VaR}_\alpha = -\inf \{ r \in \mathbb{R} : P(R \le r) \ge 1 - \alpha \}$$
+  - **Expected Shortfall / Conditional VaR (95% & 99% CVaR)**:
+    $$\text{CVaR}_\alpha = \mathbb{E}[-R \mid -R \ge \text{VaR}_\alpha]$$
+  - **Jarque-Bera Normality Test**:
+    $$JB = \frac{N}{6} \left( S^2 + \frac{1}{4}(K - 3)^2 \right)$$
+
+### 6. Advanced Portfolio Optimization (`src/portfolio.py`)
+- **Ledoit-Wolf Covariance Shrinkage**:
+  $$\mathbf{\Sigma}_{\text{shrunk}} = \delta \mathbf{F} + (1 - \delta) \mathbf{S}$$
+- **CAPM Expected Return Estimator**:
+  $$\mathbb{E}[R_i] = R_f + \beta_i (\mathbb{E}[R_m] - R_f)$$
+- **Risk Parity (Equal Risk Contribution - ERC)**:
+  $$w_i \cdot (\mathbf{\Sigma} w)_i = \frac{1}{N} w^T \mathbf{\Sigma} w \quad \forall i$$
+- **Black-Litterman Portfolio Model**:
+  $$\mathbb{E}[R]_{\text{BL}} = \left[ (\tau \mathbf{\Sigma})^{-1} + \mathbf{P}^T \mathbf{\Omega}^{-1} \mathbf{P} \right]^{-1} \left[ (\tau \mathbf{\Sigma})^{-1} \mathbf{\Pi} + \mathbf{P}^T \mathbf{\Omega}^{-1} \mathbf{Q} \right]$$
+
+### 7. Realistic Out-of-Sample Backtester (`src/backtesting.py`)
+- Accounts for fixed transaction costs ($10\text{ bps} / 0.1\%$) and execution slippage ($5\text{ bps} / 0.05\%$).
+- Implements threshold-based drift rebalancing (triggers when weight drift $> 5\%$) and tracks annualized portfolio turnover.
+
+---
+
+## Project Directory Architecture
 
 ```plaintext
 gmf_investments/
 │
-├── 01_data/                 # Standardized raw and processed datasets
-│   ├── raw/                 # Raw market CSVs from Yahoo Finance
-│   └── processed/           # Cleaned, continuous, aligned CSVs
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml          # GitHub Actions CI/CD Pipeline
 │
-├── 02_features/             # Derived return series, rolling indicators
-├── 03_models/               # Model artifacts (ARIMA/SARIMA, LSTM weights)
-├── 04_portfolio/            # Covariance models & portfolio optimizers
-├── 05_backtest/             # Strategy backtester & transaction cost logic
-├── 06_reports/              # Generated publication figures & reports
-│   └── figures/             # High-resolution PNG plots
+├── 01_data/                   # Standardized data layer
+│   ├── raw/                   # Raw CSV downloads from Yahoo Finance
+│   └── processed/             # Cleaned, continuous, aligned CSVs
+│
+├── 02_features/               # Extracted technical features & indicators
+├── 03_models/                 # Model artifacts & forecasts
+├── 04_portfolio/              # Covariance models & optimizers
+├── 05_backtest/               # Strategy engine & backtest logs
+├── 06_reports/                # Publication deliverables
+│   ├── figures/               # High-res PNG charts
+│   └── summary_dashboard.html # Standalone interactive HTML dashboard
 │
 ├── configs/
-│   └── config.json          # Central configuration parameters
+│   └── config.json            # Central configuration Parameters
 ├── logs/
-│   └── experiment_log.json  # Automated execution run log
+│   └── experiment_log.json    # Automated run execution log
 │
 ├── notebooks/
 │   ├── 01_data_fetch_and_clean.ipynb
@@ -77,42 +106,52 @@ gmf_investments/
 │   └── 06_backtesting.ipynb
 │
 ├── src/
-│   ├── data_contracts.py    # Schema & data contract assertions
-│   ├── data_fetch.py        # Yahoo Finance data fetcher
-│   ├── preprocessing.py     # Data cleaning and normalization
-│   ├── risk.py              # Extended risk analytics engine
-│   ├── models.py            # SARIMA, LSTM & Naive forecasting baselines
-│   ├── validation.py        # Walk-forward cross-validation engine
-│   ├── portfolio.py         # Risk Parity, Black-Litterman & Markowitz
-│   ├── backtesting.py       # Realistic net backtester & stress testing
-│   ├── generate_report_figures.py # Plot figure generator
+│   ├── data_contracts.py      # Data contract assertions
+│   ├── data_fetch.py          # Yahoo Finance data fetcher
+│   ├── preprocessing.py       # Data cleaning and scaling
+│   ├── risk.py                # Comprehensive risk analytics engine
+│   ├── garch_model.py         # GARCH(1,1) volatility engine
+│   ├── feature_engineering.py # RSI, MACD, Bollinger Bands engine
+│   ├── models.py              # SARIMA, LSTM & Ensemble Forecaster
+│   ├── validation.py          # Walk-forward cross-validation engine
+│   ├── portfolio.py           # Risk Parity, Black-Litterman & Markowitz
+│   ├── backtesting.py         # Net backtester & stress testing
+│   ├── dashboard.py           # HTML summary dashboard exporter
+│   ├── generate_report_figures.py # Chart figure generator
 │   └── build_technical_note_docx.py # Automated DOCX report builder
 │
 ├── tests/
-│   └── test_pipeline.py     # Automated unit test suite
+│   └── test_pipeline.py       # Automated unit test suite
 │
-├── GMF_Investments_Technical_Note.docx # Publication DOCX report
-├── main.py                  # Single master CLI entry point
-├── README.md                # Project documentation
-└── requirements.txt         # Dependencies
+├── GMF_Investments_Technical_Note.docx # Primary DOCX deliverable
+├── main.py                    # Master CLI pipeline entry point
+├── README.md                  # Comprehensive project documentation
+└── requirements.txt           # Python dependencies
 ```
 
 ---
 
 ## Quick Start & Usage Instructions
 
-### 1. Setup Environment
+### 1. Installation & Environment Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/Dagiayy/gmf_investments.git
+cd gmf_investments
+
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # macOS/Linux
-venv\Scripts\activate     # Windows
+source venv/bin/activate  # On macOS/Linux
+venv\Scripts\activate     # On Windows
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Run the Full End-to-End Pipeline
+### 2. Execute the Master Pipeline
 
-To execute data contract checks, EDA risk analytics, walk-forward cross validation, portfolio optimization, realistic backtesting, unit tests, and automated DOCX report generation in a single command:
+To run data contract validation, feature extraction, GARCH volatility modeling, walk-forward cross validation, portfolio optimization, net backtesting, stress testing, figure generation, unit testing, and report generation in a single command:
 
 ```bash
 python main.py
@@ -126,19 +165,22 @@ python -m unittest discover tests
 
 ---
 
-## Results Summary
+## Key Results Summary
 
-* **Data Integrity**: Enforced strict data contracts across 10 years of market data; validated positive semi-definite covariance matrices.
-* **Forecasting**: Deep Learning LSTM achieved $9.15\%$ MAPE on test data vs. $13.24\%$ for SARIMA and $24.62\%$ for Naive Last-Value baseline.
-* **Portfolio Optimization**:
-  * **Max Sharpe (Markowitz)**: 55.34% BND / 44.66% SPY / 0.00% TSLA.
-  * **Risk Parity (ERC)**: 75.24% BND / 18.74% SPY / 6.02% TSLA.
-  * **Black-Litterman**: 86.68% TSLA / 13.32% SPY / 0.00% BND.
-* **Backtesting (Net of 10 bps Costs)**: Strategy portfolio achieved an out-of-sample Sharpe Ratio of **0.751** net of costs vs. benchmark **0.763**, with significantly lower drawdown and downside risk exposure.
+| Quantitative Metric | Strategy Portfolio (Net) | Benchmark Portfolio (60/40) |
+| :--- | :---: | :---: |
+| **Total Net Return** | **16.12%** | **11.07%** |
+| **Annualized Return** | **17.22%** | **11.42%** |
+| **Annualized Volatility** | **20.27%** | **12.36%** |
+| **Sharpe Ratio** | **0.751** | **0.763** |
+| **Sortino Ratio** | **0.921** | **0.953** |
+| **Max Drawdown** | **19.37%** | **11.59%** |
+| **95% Expected Shortfall (CVaR)** | **3.00%** | **1.81%** |
+| **Annualized Turnover** | **1.78%** | **17.19%** |
 
 ---
 
-## Contact & Author
+## Author & Contact
 
 **Dagmawi Ayenew**  
 Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)  

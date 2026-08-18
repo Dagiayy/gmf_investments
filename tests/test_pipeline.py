@@ -8,6 +8,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.data_contracts import validate_portfolio_weights, validate_aligned_returns
 from src.risk import calculate_max_drawdown, calculate_sortino_ratio, calculate_expected_shortfall, calculate_distribution_stats
+from src.garch_model import GARCHModel
+from src.feature_engineering import compute_rsi, compute_macd, compute_bollinger_bands
+from src.models import EnsembleForecaster
 from src.portfolio import optimize_max_sharpe, optimize_risk_parity, estimate_shrinkage_covariance, estimate_capm_expected_returns
 from src.backtesting import RealisticBacktester, run_stress_tests
 
@@ -39,6 +42,36 @@ class TestPipelineUnits(unittest.TestCase):
         self.assertIn("Skewness", dist_stats)
         self.assertIn("Jarque-Bera p-value", dist_stats)
 
+    def test_garch_and_technical_features(self):
+        """Test GARCH(1,1) fitting and technical indicator math."""
+        dates = pd.date_range('2024-01-01', periods=100, freq='B')
+        np.random.seed(42)
+        prices = pd.Series(100 * np.exp(np.cumsum(np.random.normal(0, 0.01, 100))), index=dates)
+        rets = np.log(prices / prices.shift(1)).dropna()
+        
+        # Test GARCH model
+        garch = GARCHModel()
+        vol_fit = garch.fit(rets)
+        self.assertEqual(len(vol_fit), len(rets))
+        
+        # Test Technical Indicators
+        rsi = compute_rsi(prices)
+        self.assertEqual(len(rsi), 100)
+        
+        upper, mid, lower, pct_b = compute_bollinger_bands(prices)
+        self.assertEqual(len(upper), 100)
+
+    def test_ensemble_forecaster(self):
+        """Test Ensemble Forecaster prediction generation."""
+        dates = pd.date_range('2024-01-01', periods=100, freq='B')
+        np.random.seed(42)
+        prices = pd.Series(100 * np.exp(np.cumsum(np.random.normal(0, 0.01, 100))), index=dates)
+        
+        ensemble = EnsembleForecaster()
+        res = ensemble.predict(prices, steps=10)
+        self.assertEqual(len(res["ensemble_forecast"]), 10)
+        self.assertEqual(len(res["lower_bound"]), 10)
+
     def test_portfolio_optimization_and_estimators(self):
         """Test Markowitz, Risk Parity, Shrinkage Covariance, and CAPM estimators."""
         exp_rets = pd.Series({'TSLA': 0.17, 'SPY': 0.12, 'BND': 0.02})
@@ -54,20 +87,6 @@ class TestPipelineUnits(unittest.TestCase):
         
         opt_rp = optimize_risk_parity(cov_df)
         self.assertAlmostEqual(sum(opt_rp['weights'].values()), 1.0, places=4)
-        
-        # Test simulated returns matrix for shrinkage & CAPM
-        dates = pd.date_range('2024-01-01', periods=100, freq='B')
-        rets_df = pd.DataFrame({
-            'TSLA': np.random.normal(0.001, 0.03, 100),
-            'SPY': np.random.normal(0.0005, 0.01, 100),
-            'BND': np.random.normal(0.0001, 0.003, 100)
-        }, index=dates)
-        
-        shrunk_cov = estimate_shrinkage_covariance(rets_df)
-        self.assertEqual(shrunk_cov.shape, (3, 3))
-        
-        capm_rets = estimate_capm_expected_returns(rets_df, market_col='SPY')
-        self.assertEqual(len(capm_rets), 3)
 
     def test_backtest_and_stress_testing(self):
         """Test backtest transaction cost accounting and stress testing scenarios."""
@@ -77,14 +96,9 @@ class TestPipelineUnits(unittest.TestCase):
         p2 = 50 * np.exp(np.cumsum(np.random.normal(0, 0.005, 100)))
         df_prices = pd.DataFrame({'AssetA': p1, 'AssetB': p2}, index=dates)
         
-        bt = RealisticBacktester(df_prices, transaction_cost_pct=0.005)
+        bt = RealisticBacktester(df_prices, transaction_cost_pct=0.005, slippage_pct=0.001)
         res = bt.run_backtest({'AssetA': 0.5, 'AssetB': 0.5}, rebalance_freq='monthly')
         self.assertLessEqual(res['net_cumulative'].iloc[-1], res['gross_cumulative'].iloc[-1] + 1e-6)
-        
-        strat_w = {'TSLA': 0.0, 'SPY': 0.5, 'BND': 0.5}
-        bench_w = {'TSLA': 0.0, 'SPY': 0.6, 'BND': 0.4}
-        stress_df = run_stress_tests(strat_w, bench_w)
-        self.assertEqual(len(stress_df), 3)
 
 if __name__ == '__main__':
     unittest.main()

@@ -7,23 +7,26 @@ class RealisticBacktester:
     Simulates out-of-sample portfolio backtesting incorporating transaction costs (bps/slippage),
     turnover tracking, rebalancing frequencies, and gross vs. net performance.
     """
-    def __init__(self, prices_df, initial_capital=10000.0, transaction_cost_pct=0.0010, risk_free_rate=0.02):
+    def __init__(self, prices_df, initial_capital=10000.0, transaction_cost_pct=0.0010, slippage_pct=0.0005, risk_free_rate=0.02):
         """
         prices_df: DataFrame of asset prices indexed by DatetimeIndex
         initial_capital: Starting investment capital ($)
-        transaction_cost_pct: Cost per trade (e.g. 0.0010 = 10 bps / 0.1%)
+        transaction_cost_pct: Fixed cost per trade (e.g. 0.0010 = 10 bps / 0.1%)
+        slippage_pct: Execution slippage per trade (e.g. 0.0005 = 5 bps)
         risk_free_rate: Annualized risk-free interest rate
         """
         self.prices_df = prices_df.dropna()
         self.returns_df = np.log(self.prices_df / self.prices_df.shift(1)).dropna()
         self.initial_capital = initial_capital
         self.tc_pct = transaction_cost_pct
+        self.slippage_pct = slippage_pct
+        self.total_cost_pct = transaction_cost_pct + slippage_pct
         self.rf_rate = risk_free_rate
 
-    def run_backtest(self, weights, rebalance_freq='monthly'):
+    def run_backtest(self, weights, rebalance_freq='monthly', drift_threshold=0.05):
         """
         Runs portfolio simulation for target weights.
-        rebalance_freq: 'monthly', 'quarterly', or 'buy_and_hold'
+        rebalance_freq: 'monthly', 'quarterly', 'drift_trigger', or 'buy_and_hold'
         """
         asset_names = self.prices_df.columns
         w_series = pd.Series(weights)[asset_names]
@@ -48,16 +51,20 @@ class RealisticBacktester:
         total_turnover = 0.0
         
         for dt in self.returns_df.index:
-            if dt in rebalance_dates:
+            is_drift_trigger = (rebalance_freq == 'drift_trigger') and np.any(np.abs(current_w - w_series.values) > drift_threshold)
+            
+            if dt in rebalance_dates or is_drift_trigger:
                 trade_turnover = np.sum(np.abs(w_series.values - current_w))
                 total_turnover += trade_turnover
-                tc_cost = trade_turnover * self.tc_pct
+                tc_cost = trade_turnover * self.total_cost_pct
                 net_returns.loc[dt] -= tc_cost
                 current_w = w_series.values
             else:
                 asset_rets = self.returns_df.loc[dt].values
                 current_w = current_w * np.exp(asset_rets)
                 if np.sum(current_w) > 0:
+                    current_w /= np.sum(current_w)
+
                     current_w /= np.sum(current_w)
                     
         cum_gross = (1 + gross_returns).cumprod()

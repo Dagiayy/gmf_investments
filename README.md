@@ -1,126 +1,105 @@
-
-# GMF Investments — Financial Data Analytics & Forecasting Pipeline
+# GMF Investments — Quantitative Analytics, Time Series Forecasting & Portfolio Strategy Pipeline
 
 ## Project Overview
 
-This project focuses on financial time series data analysis and forecasting for three major assets:
+This repository houses the **GMF Investments Quantitative Pipeline & Roadmap Implementation**. The codebase performs financial data engineering, exploratory data analysis, time-series forecasting (ARIMA/SARIMA vs Deep Learning LSTM), Modern Portfolio Theory optimization (Markowitz, Risk Parity, Black-Litterman), and net-of-transaction-cost backtesting across three strategic asset classes:
 
-* **TSLA (Tesla, Inc.)** — high growth and volatility
-* **BND (Vanguard Total Bond Market ETF)** — low risk, stable bonds
-* **SPY (SPDR S\&P 500 ETF Trust)** — diversified equity exposure
-
-The goal is to preprocess and explore financial data (**Task 1**) and build predictive models (**Task 2**) to forecast future stock prices. This serves as a foundation for quantitative investment strategies and risk management.
+* **TSLA (Tesla, Inc.)** — High-growth equity with significant volatility.
+* **SPY (SPDR S&P 500 ETF Trust)** — Broad market U.S. index benchmark.
+* **BND (Vanguard Total Bond Market ETF)** — Fixed income asset for risk stabilization.
 
 ---
 
-## Tasks
+## Technical Highlights & Roadmap Enhancements
 
-### Task 1: Data Preprocessing and Exploratory Data Analysis (EDA)
+### 1. Central Configuration & Reproducibility Infrastructure
+* **Central Config (`configs/config.json`)**: All asset universe settings, date bounds (2015–2025), train/test split dates (`2023-12-31`), backtest period (`2024-08-01` to `2025-07-31`), transaction cost assumptions (`10 bps / 0.1%`), risk-free rate (`2.0%`), and model seeds (`42`) are centralized.
+* **Experiment Logging (`logs/experiment_log.json`)**: Automatically logs execution timestamps, dataset bounds, model metrics, portfolio weights, and test results for full auditability.
 
-* **Download** raw historical market data using Yahoo Finance API.
-* **Clean** data to handle missing values, fix inconsistencies, and ensure proper formats.
-* **Visualize** price trends, daily returns, rolling statistics, and volatility.
-* **Perform** stationarity tests (ADF test) to verify suitability for time series modeling.
-* **Calculate** key risk metrics: Value at Risk (VaR) and Sharpe Ratio.
-* **Output** cleaned datasets and summary visualizations for further analysis.
+### 2. Data Contracts & Leakage Prevention (`src/data_contracts.py`)
+* Enforces data contract assertions: continuous `DatetimeIndex`, non-empty series, zero NaN occurrences, non-positive price checks ($P > 0$), positive semi-definite covariance matrices ($\lambda_{\min} \ge 0$), and portfolio weight sum-to-1 constraints ($\sum w_i = 1$).
 
----
+### 3. Naive Forecasting Baselines & Walk-Forward Validation Engine (`src/validation.py`)
+* Benchmarks complex models against simple naive baselines: **Random Walk / Naive Last-Value** ($y_{t+h} = y_t$) and **30-Day Moving Average**.
+* Implements a 19-fold expanding-window `WalkForwardValidator` to evaluate model stability across multiple historical market regimes without data leakage.
 
-### Task 2: Time Series Forecasting Models
+### 4. Comprehensive Risk Analytics (`src/risk.py`)
+* Extends basic VaR and Sharpe ratios with:
+  * **Sortino Ratio** (downside deviation risk-adjusted return)
+  * **Calmar Ratio** (annualized return / max drawdown)
+  * **Maximum Drawdown (MDD)** & Peak-to-Trough duration
+  * **95% & 99% Expected Shortfall / Conditional VaR (CVaR)**
+  * **Jarque-Bera Normality Test** & higher-order moments (Skewness, Kurtosis)
+  * **Asset Beta** relative to SPY market index.
 
-* **Split data** chronologically into training (2015-2023) and testing (2024-2025) to preserve time order.
-* **Develop and optimize** classical models: ARIMA and SARIMA, with grid search for parameters.
-* **Build and train** a deep learning model: LSTM neural network.
-* **Forecast** stock prices on the test set.
-* **Evaluate** models using performance metrics: Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and optionally MAPE.
-* **Compare** model results and discuss trade-offs between interpretability and accuracy.
+### 5. Advanced Portfolio Optimization (`src/portfolio.py`)
+* **Ledoit-Wolf Covariance Shrinkage**: Reduces sample noise in asset covariance estimation.
+* **CAPM Expected Returns**: Estimates CAPM expected returns ($E(R_i) = R_f + \beta_i (E(R_m) - R_f)$).
+* **Advanced Optimizers**: Supports **Markowitz Maximum Sharpe & Minimum Volatility**, **Risk Parity (Equal Risk Contribution - ERC)**, **Black-Litterman Allocation**, and **Return Sensitivity Stress Testing**.
 
----
+### 6. Realistic Strategy Backtesting & Stress Scenarios (`src/backtesting.py`)
+* Simulates out-of-sample portfolio performance net of $10\text{ bps}$ ($0.1\%$) transaction costs per rebalance trade.
+* Tracks annualized portfolio turnover and compares monthly vs. quarterly rebalancing schedules.
+* **Macro Stress Testing**: Evaluates portfolio downside buffers under *Severe Equity Selloffs*, *Rate Shocks*, and *Tech Volatility Crashes*.
 
-### Task 3: Forecast Future Market Trends
-
-* **Generate** future price predictions for 6-12 months using the best trained model(s).
-* **Visualize** forecasts alongside historical prices with confidence intervals.
-* **Interpret** long-term trends, identifying upward/downward movements or anomalies.
-* **Analyze** forecast uncertainty by examining confidence interval widths over the horizon.
-* **Outline** market opportunities and risks based on forecast trends and volatility.
-
----
-
-### Task 4: Portfolio Optimization Based on Forecast
-
-* **Use** forecasted return for TSLA from the best-performing model as expected return.
-* **Use** historical average returns for stable assets (BND, SPY).
-* **Compute** covariance matrix from historical returns of all assets.
-* **Run** portfolio optimization based on Modern Portfolio Theory.
-* **Generate** and plot the Efficient Frontier.
-* **Identify** and mark Maximum Sharpe Ratio and Minimum Volatility portfolios.
-* **Recommend** an optimal portfolio with expected return, volatility, and weights.
+### 7. Automated Unit Test Suite (`tests/test_pipeline.py`)
+* Unit tests validating data contract assertions, risk calculations, covariance shrinkage, CAPM returns, portfolio constraints, and backtest transaction cost accounting.
 
 ---
 
-### Task 5: Strategy Backtesting (Final Task)
-
-* **Define** backtesting period using the last year of data (e.g., Aug 1, 2024 – Jul 31, 2025).
-* **Establish** a benchmark portfolio (e.g., static 60% SPY / 40% BND).
-* **Simulate** the strategy portfolio performance based on optimal weights from Task 4.
-* **Hold** portfolio weights fixed or perform simplified rebalancing over the period.
-* **Calculate** cumulative returns, total return, and annualized Sharpe Ratio.
-* **Compare** the strategy performance against the benchmark.
-* **Analyze** and conclude on strategy viability and risk-adjusted performance.
-
----
-
-## Technologies and Libraries
-
-* Python 3.8+
-* pandas, numpy — Data manipulation and numerical operations
-* matplotlib, seaborn — Visualization
-* statsmodels — Statistical tests, ARIMA/SARIMA modeling
-* scikit-learn — Data preprocessing and evaluation metrics
-* TensorFlow / Keras — LSTM modeling and training
-
----
-
-## Project Structure
+## Repository Architecture
 
 ```plaintext
 gmf_investments/
 │
-├── data/
-│   ├── raw/                  # Raw CSVs downloaded from Yahoo Finance
-│   ├── processed/            # Cleaned and preprocessed CSVs
+├── 01_data/                 # Standardized raw and processed datasets
+│   ├── raw/                 # Raw market CSVs from Yahoo Finance
+│   └── processed/           # Cleaned, continuous, aligned CSVs
+│
+├── 02_features/             # Derived return series, rolling indicators
+├── 03_models/               # Model artifacts (ARIMA/SARIMA, LSTM weights)
+├── 04_portfolio/            # Covariance models & portfolio optimizers
+├── 05_backtest/             # Strategy backtester & transaction cost logic
+├── 06_reports/              # Generated publication figures & reports
+│   └── figures/             # High-resolution PNG plots
+│
+├── configs/
+│   └── config.json          # Central configuration parameters
+├── logs/
+│   └── experiment_log.json  # Automated execution run log
 │
 ├── notebooks/
-│   ├── 01_data_fetch_and_clean.ipynb    # Task 1: data fetching & cleaning
-│   ├── 02_eda.ipynb                      # Task 1: exploratory data analysis
-│   ├── 03_model_arima_lstm.ipynb         # Task 2: time series modeling & comparison
-│   ├── 04_forecasting.ipynb              # Task 2 & 3: forecasting & trend analysis
-│   ├── 05_portfolio_optimization.ipynb   # Task 4: portfolio optimization
-│   ├── 06_backtesting.ipynb               # Task 5: strategy backtesting
+│   ├── 01_data_fetch_and_clean.ipynb
+│   ├── 02_eda.ipynb
+│   ├── 03_model_arima_lstm.ipynb
+│   ├── 04_forecasting.ipynb
+│   ├── 05_portfolio_optimization.ipynb
+│   └── 06_backtesting.ipynb
 │
 ├── src/
-│   ├── data_fetch.py          # Functions to download data from Yahoo Finance
-│   ├── preprocessing.py       # Data cleaning and feature engineering functions
-│   ├── eda.py                 # Plotting and summary statistics
-│   ├── models.py              # ARIMA/SARIMA & LSTM model implementations
-│   ├── portfolio.py           # Portfolio optimization functions
-│   ├── backtesting.py         # Backtesting logic
-│   └── utils.py               # Helper functions
+│   ├── data_contracts.py    # Schema & data contract assertions
+│   ├── data_fetch.py        # Yahoo Finance data fetcher
+│   ├── preprocessing.py     # Data cleaning and normalization
+│   ├── risk.py              # Extended risk analytics engine
+│   ├── models.py            # SARIMA, LSTM & Naive forecasting baselines
+│   ├── validation.py        # Walk-forward cross-validation engine
+│   ├── portfolio.py         # Risk Parity, Black-Litterman & Markowitz
+│   ├── backtesting.py       # Realistic net backtester & stress testing
+│   ├── generate_report_figures.py # Plot figure generator
+│   └── build_technical_note_docx.py # Automated DOCX report builder
 │
-├── reports/
-│   ├── interim_report.pdf     # Interim analysis report
-│   ├── final_investment_memo.pdf  # Final investment memo
-│   └── figures/               # Visualizations (price trends, model diagnostics)
+├── tests/
+│   └── test_pipeline.py     # Automated unit test suite
 │
-├── requirements.txt           # Dependencies
-├── README.md                  # This file
-└── main.py                   # Optional: run full pipeline script
-````
+├── GMF_Investments_Technical_Note.docx # Publication DOCX report
+├── main.py                  # Single master CLI entry point
+├── README.md                # Project documentation
+└── requirements.txt         # Dependencies
+```
 
 ---
 
-## Usage Instructions
+## Quick Start & Usage Instructions
 
 ### 1. Setup Environment
 
@@ -131,92 +110,36 @@ venv\Scripts\activate     # Windows
 pip install -r requirements.txt
 ```
 
-### 2. Run Data Preprocessing (Task 1)
+### 2. Run the Full End-to-End Pipeline
+
+To execute data contract checks, EDA risk analytics, walk-forward cross validation, portfolio optimization, realistic backtesting, unit tests, and automated DOCX report generation in a single command:
 
 ```bash
-python src/task1_preprocess.py
+python main.py
 ```
 
-### 3. Run Exploratory Data Analysis (Task 1)
+### 3. Run Automated Unit Tests
 
 ```bash
-python src/task1_eda.py
+python -m unittest discover tests
 ```
-
-### 4. Build and Evaluate Forecasting Models (Task 2)
-
-```bash
-python src/task2_modeling.py
-```
-
-### 5. Forecast Future Market Trends (Task 3)
-
-Use the Jupyter notebook:
-
-* `notebooks/04_forecasting.ipynb`
-
-### 6. Portfolio Optimization (Task 4)
-
-Use the Jupyter notebook:
-
-* `notebooks/05_portfolio_optimization.ipynb`
-
-### 7. Strategy Backtesting (Task 5)
-
-Use the Jupyter notebook:
-
-* `notebooks/06_backtesting.ipynb`
 
 ---
 
 ## Results Summary
 
-* **Data Cleaning:** Missing values handled, dates properly formatted, and consistent time series constructed.
-
-* **EDA:** TSLA showed high volatility and non-stationarity in prices; returns were more stationary.
-
-* **ARIMA/SARIMA:** Identified best seasonal parameters with grid search (e.g., SARIMA(0,1,1)x(0,1,1,12)) for Tesla price forecasting.
-
-* **LSTM:** Deep learning model showed lower MAE and RMSE compared to ARIMA, indicating improved accuracy but higher complexity.
-
-* **Forecasting & Trend Analysis:**
-
-  * Generated 6-12 month forecasts with confidence intervals.
-  * Observed general upward trend with widening confidence intervals over time.
-  * Highlighted increasing uncertainty in long-term forecasts.
-  * Provided actionable insights on market opportunities and risks.
-
-* **Portfolio Optimization:**
-
-  * Used forecasted returns and historical data to compute efficient frontier.
-  * Identified Maximum Sharpe Ratio and Minimum Volatility portfolios.
-  * Recommended an optimal portfolio with asset weights and risk-return profile.
-
-* **Backtesting:**
-
-  * Simulated strategy portfolio performance against a benchmark (60% SPY / 40% BND).
-  * Strategy achieved a total return of \~9.1% with Sharpe ratio \~0.97.
-  * Benchmark achieved a total return of \~11.1% with Sharpe ratio \~0.93.
-  * Strategy showed better risk-adjusted return, suggesting viability despite lower raw return.
-  * Backtest highlights the importance of risk management alongside return maximization.
+* **Data Integrity**: Enforced strict data contracts across 10 years of market data; validated positive semi-definite covariance matrices.
+* **Forecasting**: Deep Learning LSTM achieved $9.15\%$ MAPE on test data vs. $13.24\%$ for SARIMA and $24.62\%$ for Naive Last-Value baseline.
+* **Portfolio Optimization**:
+  * **Max Sharpe (Markowitz)**: 55.34% BND / 44.66% SPY / 0.00% TSLA.
+  * **Risk Parity (ERC)**: 75.24% BND / 18.74% SPY / 6.02% TSLA.
+  * **Black-Litterman**: 86.68% TSLA / 13.32% SPY / 0.00% BND.
+* **Backtesting (Net of 10 bps Costs)**: Strategy portfolio achieved an out-of-sample Sharpe Ratio of **0.751** net of costs vs. benchmark **0.763**, with significantly lower drawdown and downside risk exposure.
 
 ---
 
-## Future Directions
+## Contact & Author
 
-* Expand forecasting models with additional techniques (GARCH, Prophet).
-* Integrate macroeconomic variables and sentiment data for enriched features.
-* Implement more sophisticated portfolio optimization and risk budgeting.
-* Add realistic backtesting features like transaction costs, rebalancing, and drawdowns.
-* Automate full data pipeline and enable near real-time forecasting and trading signals.
-
----
-
-## Contact
-
-**Dagmawi Ayenew**
-Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)
-
-```
-
-
+**Dagmawi Ayenew**  
+Email: [ayenewdagmawi@gmail.com](mailto:ayenewdagmawi@gmail.com)  
+GitHub: [https://github.com/Dagiayy/gmf_investments](https://github.com/Dagiayy/gmf_investments)

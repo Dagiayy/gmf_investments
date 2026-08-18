@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-18T14:32:58.680974",
+  "timestamp": "2026-08-18T14:52:11.636563",
   "config": {
     "assets": [
       "TSLA",
@@ -109,12 +109,12 @@
       "Annualized Turnover": "1.78%"
     },
     "Benchmark Portfolio (60/40)": {
-      "Total Return": "11.07%",
-      "Annualized Return": "11.42%",
+      "Total Return": "11.06%",
+      "Annualized Return": "11.41%",
       "Annualized Volatility": "12.36%",
-      "Sharpe Ratio": "0.763",
-      "Sortino Ratio": "0.953",
-      "Max Drawdown": "11.59%",
+      "Sharpe Ratio": "0.762",
+      "Sortino Ratio": "0.952",
+      "Max Drawdown": "11.60%",
       "95% VaR": "1.10%",
       "95% CVaR": "1.81%",
       "Annualized Turnover": "17.19%"

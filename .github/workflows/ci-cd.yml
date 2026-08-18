@@ -1,4 +1,4 @@
-name: GMF Investments CI/CD Pipeline
+name: GMF Investments CI/CD & Release Pipeline
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
       - main
       - master
       - 'feature/**'
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - main
@@ -29,11 +31,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Package
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip build setuptools wheel
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install statsmodels scipy matplotlib pandas python-docx scikit-learn pytest
+          pip install -e .
 
       - name: Run Data Contract & Unit Tests
         run: |
@@ -43,19 +45,65 @@ jobs:
         run: |
           python main.py
 
-      - name: Validate Generated Reports & Logs
+      - name: Build Python Package Distribution (sdist & wheel)
+        if: matrix.python-version == '3.10'
+        run: |
+          python -m build
+
+      - name: Validate Generated Reports & Package Artifacts
         run: |
           test -f reports/GMF_Investments_Technical_Note.docx
           test -f GMF_Investments_Technical_Note.docx
           test -f logs/experiment_log.json
 
-      - name: Upload Technical Report Artifacts
+      - name: Upload Build & Technical Artifacts
         if: matrix.python-version == '3.10'
         uses: actions/upload-artifact@v4
         with:
-          name: GMF-Investments-Technical-Note-DOCX
+          name: GMF-Investments-Release-Package-and-Report
           path: |
+            dist/
             GMF_Investments_Technical_Note.docx
             reports/GMF_Investments_Technical_Note.docx
             logs/experiment_log.json
-            reports/figures/
+            06_reports/summary_dashboard.html
+
+  release:
+    name: Create GitHub Release
+    needs: test-and-build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Build Distribution Packages
+        run: |
+          python -m pip install --upgrade pip build
+          pip install -r requirements.txt
+          python main.py
+          python -m build
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
+            GMF_Investments_Technical_Note.docx
+            06_reports/summary_dashboard.html
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## GMF Investments Release ${{ github.ref_name }}
+            - Fully reproducible quantitative analytics pipeline.
+            - Python wheel (`.whl`) and source distribution (`.tar.gz`).
+            - Production `.docx` Technical Note and interactive HTML summary dashboard.
+          draft: false
+          prerelease: false

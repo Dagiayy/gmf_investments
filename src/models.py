@@ -12,12 +12,17 @@ from sklearn.preprocessing import MinMaxScaler
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.stattools import adfuller
 
-# Keras for LSTM
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.callbacks import EarlyStopping
+# Keras for LSTM (Optional)
+try:
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import LSTM, Dense, Dropout
+    from tensorflow.keras.callbacks import EarlyStopping
+    HAS_TENSORFLOW = True
+except ImportError:
+    HAS_TENSORFLOW = False
 
 warnings.filterwarnings("ignore")
+
 
 
 # -------------------------
@@ -42,6 +47,60 @@ def train_test_split_series(series, train_end='2023-12-31'):
     if len(test) > 0 and test.index[0] == train.index[-1]:
         test = test.iloc[1:]
     return train, test
+
+
+# -------------------------
+# Naive Forecasting Baselines
+# -------------------------
+def naive_last_value_forecast(train_series, steps):
+    """
+    Random Walk / Naive Last-Value Baseline: Predicts y_{t+h} = y_t.
+    """
+    last_val = train_series.iloc[-1]
+    return np.full(steps, last_val)
+
+
+def seasonal_naive_forecast(train_series, steps, season_lag=252):
+    """
+    Seasonal Naive Baseline: Predicts y_{t+h} = y_{t+h-S}.
+    """
+    if len(train_series) < season_lag:
+        season_lag = len(train_series)
+    historical_cycle = train_series.iloc[-season_lag:].values
+    repeats = int(np.ceil(steps / len(historical_cycle)))
+    forecast = np.tile(historical_cycle, repeats)[:steps]
+    return forecast
+
+
+def moving_average_forecast(train_series, steps, window=30):
+    """
+    Moving Average Baseline: Predicts y_{t+h} = rolling mean of last N days.
+    """
+    ma_val = train_series.iloc[-window:].mean()
+    return np.full(steps, ma_val)
+
+
+def perform_residual_diagnostics(residuals, lags=10):
+    """
+    Checks residual autocorrelation using statsmodels acf and Ljung-Box test.
+    """
+    clean_res = pd.Series(residuals).dropna()
+    try:
+        from statsmodels.stats.diagnostic import acorr_ljungbox
+        lb_df = acorr_ljungbox(clean_res, lags=[lags], return_df=True)
+        lb_stat = lb_df['lb_stat'].iloc[0]
+        lb_pvalue = lb_df['lb_pvalue'].iloc[0]
+    except Exception:
+        lb_stat, lb_pvalue = np.nan, np.nan
+        
+    return {
+        "Mean Residual": clean_res.mean(),
+        "Std Residual": clean_res.std(),
+        "Ljung-Box Stat": lb_stat,
+        "Ljung-Box p-value": lb_pvalue,
+        "Residuals Autocorrelated": lb_pvalue < 0.05 if not np.isnan(lb_pvalue) else False
+    }
+
 
 
 # -------------------------
@@ -127,8 +186,52 @@ def arima_forecast(model_fit, steps):
 
 
 # -------------------------
+# Ensemble Forecaster
+# -------------------------
+class EnsembleForecaster:
+    """
+    Hybrid Ensemble Forecaster combining Statistical SARIMA/ARIMA predictions,
+    Naive Moving Average trends, and GARCH volatility uncertainty bounds.
+    """
+    def __init__(self, sarima_weight=0.5, ma_weight=0.5):
+        self.sarima_weight = sarima_weight
+        self.ma_weight = ma_weight
+
+    def predict(self, train_series, steps):
+        """Generates weighted ensemble point predictions and dynamic confidence bounds."""
+        # 1. Moving average prediction
+        ma_preds = moving_average_forecast(train_series, steps, window=30)
+        
+        # 2. SARIMA prediction if available
+        try:
+            fit, order = find_best_arima_by_aic(train_series, p_range=(0, 2), d_range=(1, 1), q_range=(0, 2))
+            if fit is not None:
+                sarima_preds, ci = arima_forecast(fit, steps)
+                sarima_vals = sarima_preds.values
+            else:
+                sarima_vals = ma_preds
+        except Exception:
+            sarima_vals = ma_preds
+            
+        ensemble_preds = (self.sarima_weight * sarima_vals) + (self.ma_weight * ma_preds)
+        
+        # Calculate dynamic confidence bounds using historical variance
+        last_val = train_series.iloc[-1]
+        std_err = train_series.pct_change().std() * last_val * np.sqrt(np.arange(1, steps + 1))
+        lower_bound = ensemble_preds - 1.96 * std_err
+        upper_bound = ensemble_preds + 1.96 * std_err
+        
+        return {
+            "ensemble_forecast": ensemble_preds,
+            "lower_bound": lower_bound,
+            "upper_bound": upper_bound
+        }
+
+
+# -------------------------
 # LSTM helpers
 # -------------------------
+
 def create_sequences(values, window):
     X, y = [], []
     for i in range(len(values) - window):

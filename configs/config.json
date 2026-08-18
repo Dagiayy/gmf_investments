@@ -1,0 +1,48 @@
+{
+  "assets": ["TSLA", "SPY", "BND"],
+  "data_paths": {
+    "raw_dir": "data/raw",
+    "processed_dir": "data/processed",
+    "output_dir": "output",
+    "figures_dir": "reports/figures",
+    "models_dir": "models",
+    "reports_dir": "reports"
+  },
+  "dates": {
+    "start_date": "2015-01-01",
+    "end_date": "2025-07-31",
+    "train_end": "2023-12-31",
+    "test_start": "2024-01-01",
+    "backtest_start": "2024-08-01",
+    "backtest_end": "2025-07-31"
+  },
+  "backtest": {
+    "transaction_cost_bps": 10,
+    "transaction_cost_pct": 0.0010,
+    "rebalance_frequency": "monthly",
+    "risk_free_rate": 0.02,
+    "initial_capital": 10000.0,
+    "benchmark_weights": {
+      "TSLA": 0.0,
+      "SPY": 0.60,
+      "BND": 0.40
+    }
+  },
+  "forecasting": {
+    "random_seed": 42,
+    "forecast_horizon_days": 252,
+    "lstm_window_size": 60,
+    "lstm_units": 50,
+    "lstm_epochs": 50,
+    "lstm_batch_size": 32,
+    "lstm_dropout": 0.2,
+    "arima_p_range": [0, 3],
+    "arima_d_range": [0, 2],
+    "arima_q_range": [0, 3]
+  },
+  "portfolio": {
+    "risk_free_rate": 0.02,
+    "black_litterman_tau": 0.05,
+    "cvar_alpha": 0.95
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "timestamp": "2026-08-18T14:32:58.680974",
+  "config": {
+    "assets": [
+      "TSLA",
+      "SPY",
+      "BND"
+    ],
+    "data_paths": {
+      "raw_dir": "data/raw",
+      "processed_dir": "data/processed",
+      "output_dir": "output",
+      "figures_dir": "reports/figures",
+      "models_dir": "models",
+      "reports_dir": "reports"
+    },
+    "dates": {
+      "start_date": "2015-01-01",
+      "end_date": "2025-07-31",
+      "train_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "backtest_start": "2024-08-01",
+      "backtest_end": "2025-07-31"
+    },
+    "backtest": {
+      "transaction_cost_bps": 10,
+      "transaction_cost_pct": 0.001,
+      "rebalance_frequency": "monthly",
+      "risk_free_rate": 0.02,
+      "initial_capital": 10000.0,
+      "benchmark_weights": {
+        "TSLA": 0.0,
+        "SPY": 0.6,
+        "BND": 0.4
+      }
+    },
+    "forecasting": {
+      "random_seed": 42,
+      "forecast_horizon_days": 252,
+      "lstm_window_size": 60,
+      "lstm_units": 50,
+      "lstm_epochs": 50,
+      "lstm_batch_size": 32,
+      "lstm_dropout": 0.2,
+      "arima_p_range": [
+        0,
+        3
+      ],
+      "arima_d_range": [
+        0,
+        2
+      ],
+      "arima_q_range": [
+        0,
+        3
+      ]
+    },
+    "portfolio": {
+      "risk_free_rate": 0.02,
+      "black_litterman_tau": 0.05,
+      "cvar_alpha": 0.95
+    }
+  },
+  "data_summary": {
+    "num_rows": 2535,
+    "start_date": "2015-07-01 00:00:00",
+    "end_date": "2025-07-30 00:00:00"
+  },
+  "wfv_baselines": {
+    "Naive_Last_Value": {
+      "MAE": 57.90405959573106,
+      "RMSE": 68.67514210921912,
+      "MAPE": 24.621379706978093
+    },
+    "Moving_Average_30D": {
+      "MAE": 58.48534874051634,
+      "RMSE": 69.39717898238034,
+      "MAPE": 24.94305440582868
+    },
+    "Num_Folds": 19
+  },
+  "portfolio_allocations": {
+    "max_sharpe": {
+      "TSLA": 0.006758899430213425,
+      "BND": 0.0,
+      "SPY": 0.9932411005697867
+    },
+    "risk_parity": {
+      "TSLA": 0.06019859016660743,
+      "SPY": 0.1873802751412523,
+      "BND": 0.7524211346921403
+    },
+    "black_litterman": {
+      "TSLA": 0.8667901732769403,
+      "SPY": 0.1332098267230598,
+      "BND": 0.0
+    }
+  },
+  "backtest_summary": {
+    "Strategy Portfolio (Net)": {
+      "Total Return": "16.12%",
+      "Annualized Return": "17.22%",
+      "Annualized Volatility": "20.27%",
+      "Sharpe Ratio": "0.751",
+      "Sortino Ratio": "0.921",
+      "Max Drawdown": "19.37%",
+      "95% VaR": "1.80%",
+      "95% CVaR": "3.00%",
+      "Annualized Turnover": "1.78%"
+    },
+    "Benchmark Portfolio (60/40)": {
+      "Total Return": "11.07%",
+      "Annualized Return": "11.42%",
+      "Annualized Volatility": "12.36%",
+      "Sharpe Ratio": "0.763",
+      "Sortino Ratio": "0.953",
+      "Max Drawdown": "11.59%",
+      "95% VaR": "1.10%",
+      "95% CVaR": "1.81%",
+      "Annualized Turnover": "17.19%"
+    }
+  },
+  "unit_tests_passed": true
+}

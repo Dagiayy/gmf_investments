@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gmf_investments"
+version = "1.0.0"
+description = "Financial Data Analytics, Volatility Modeling, Time Series Forecasting, Portfolio Optimization, and Backtesting Pipeline"
+readme = "README.md"
+authors = [
+    { name = "Dagmawi Ayenew", email = "ayenewdagmawi@gmail.com" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["quantitative-finance", "portfolio-optimization", "time-series", "sarima", "lstm", "garch", "risk-management"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas>=1.4.0",
+    "numpy>=1.22.0",
+    "scipy>=1.8.0",
+    "statsmodels>=0.14.0",
+    "scikit-learn>=1.0.0",
+    "matplotlib>=3.5.0",
+    "python-docx>=1.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/Dagiayy/gmf_investments"
+Repository = "https://github.com/Dagiayy/gmf_investments.git"
+Issues = "https://github.com/Dagiayy/gmf_investments/issues"
+
+[project.scripts]
+gmf-investments = "main:run_pipeline"
